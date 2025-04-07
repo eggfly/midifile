@@ -2375,6 +2375,75 @@ std::ostream& operator<<(std::ostream& out, MidiMessage& message) {
 }
 
 
+std::string MidiMessage::getMessageTypeString() const {
+    if (isMetaMessage()) {
+        int metaType = getMetaType();
+        std::string content = getMetaContent();
+        
+        switch (metaType) {
+            case 0x01: return "MetaMessage('text', text='" + content + "')";
+            case 0x02: return "MetaMessage('copyright', text='" + content + "')";
+            case 0x03: return "MetaMessage('track_name', name='" + content + "')";
+            case 0x04: return "MetaMessage('instrument_name', name='" + content + "')";
+            case 0x05: return "MetaMessage('lyric', text='" + content + "')";
+            case 0x06: return "MetaMessage('marker', text='" + content + "')";
+            case 0x07: return "MetaMessage('cue_point', text='" + content + "')";
+            case 0x2F: return "MetaMessage('end_of_track')";
+            case 0x51: {
+                int tempo = getTempoMicroseconds();
+                return "MetaMessage('set_tempo', tempo=" + std::to_string(tempo) + ")";
+            }
+            case 0x58: {
+                if (size() >= 7) {
+                    int numerator = (*this)[3];
+                    int denominator = 1 << (*this)[4];
+                    return "MetaMessage('time_signature', numerator=" + std::to_string(numerator) + 
+                           ", denominator=" + std::to_string(denominator) + ")";
+                }
+                return "MetaMessage('time_signature')";
+            }
+            case 0x59: {
+                if (size() >= 5) {
+                    int sharps = (*this)[3];
+                    bool minor = (*this)[4] != 0;
+                    return "MetaMessage('key_signature', sharps=" + std::to_string(sharps) + 
+                           ", minor=" + (minor ? "true" : "false") + ")";
+                }
+                return "MetaMessage('key_signature')";
+            }
+            default: return "MetaMessage('unknown', type=0x" + std::to_string(metaType) + ")";
+        }
+    } else if (isNoteOn()) {
+        return "Message('note_on', channel=" + std::to_string(getChannel()) + 
+               ", note=" + std::to_string(getKeyNumber()) + 
+               ", velocity=" + std::to_string(getVelocity()) + ")";
+    } else if (isNoteOff()) {
+        return "Message('note_off', channel=" + std::to_string(getChannel()) + 
+               ", note=" + std::to_string(getKeyNumber()) + 
+               ", velocity=" + std::to_string(getVelocity()) + ")";
+    } else if (isPatchChange()) {
+        return "Message('program_change', channel=" + std::to_string(getChannel()) + 
+               ", program=" + std::to_string(getP1()) + ")";
+    } else if (isController()) {
+        return "Message('control_change', channel=" + std::to_string(getChannel()) + 
+               ", control=" + std::to_string(getControllerNumber()) + 
+               ", value=" + std::to_string(getControllerValue()) + ")";
+    } else if (isPitchbend()) {
+        int value = (getP2() << 7) | getP1();
+        return "Message('pitch_bend', channel=" + std::to_string(getChannel()) + 
+               ", value=" + std::to_string(value) + ")";
+    } else if (isAftertouch()) {
+        return "Message('aftertouch', channel=" + std::to_string(getChannel()) + 
+               ", note=" + std::to_string(getKeyNumber()) + 
+               ", value=" + std::to_string(getP2()) + ")";
+    } else if (isPressure()) {
+        return "Message('channel_pressure', channel=" + std::to_string(getChannel()) + 
+               ", value=" + std::to_string(getP1()) + ")";
+    } else {
+        return "Message('unknown', command=0x" + std::to_string(getCommandByte()) + ")";
+    }
+}
+
 } // end namespace smf
 
 

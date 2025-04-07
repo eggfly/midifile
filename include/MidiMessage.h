@@ -178,6 +178,7 @@ class MidiMessage : public std::vector<uchar> {
 		void           setTempo             (double tempo);
 		void           setTempoMicroseconds (int microseconds);
 		void           setMetaTempo         (double tempo);
+		std::string    getMessageTypeString (void) const;
 
 
 		void           makeSysExMessage     (const std::vector<uchar>& data);

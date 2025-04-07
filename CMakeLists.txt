@@ -126,6 +126,7 @@ if(NOT BUILD_MIDILIBRARY_ONLY)
   add_executable(tohex tools/tohex.cpp)
   add_executable(type0 tools/type0.cpp)
   add_executable(vlv tools/vlv.cpp)
+  add_executable(my_tool1 tools/mytool1.cpp)
 
   target_link_libraries(80off midifile)
   target_link_libraries(asciimidi midifile)
